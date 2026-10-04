@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVIATOR PRO PLATFORM</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- FontAwesome fallback -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        .font-mono-num {
+            font-family: 'Orbitron', monospace;
+        }
+        .glow-red {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+        }
+        .glow-green {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(71, 85, 105, 1);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 bg-slate-950 flex flex-col justify-between overflow-x-hidden">
+
+    <!-- MAIN NAVIGATION HEADER -->
+    <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo (Click 5 times or press Ctrl+Shift+A for Admin Panel) -->
+            <div id="brandLogo" class="flex items-center gap-3 cursor-pointer group select-none" title="5-click logo or press Ctrl+Shift+A for owner dashboard">
+                <div class="bg-red-600/20 p-2.5 rounded-xl border border-red-500/30 group-hover:bg-red-600/30 transition-all">
+                    <i data-lucide="plane" class="w-6 h-6 text-red-500 transform -rotate-45 group-hover:scale-110 transition-transform"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider text-white flex items-center gap-1.5 font-mono-num">
+                        AVIATOR <span class="text-xs bg-red-600/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30 font-sans tracking-normal font-bold">PRO</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 tracking-wider uppercase font-medium">High Stakes Crash Arena</p>
+                </div>
+            </div>
+
+            <!-- Player Quick Stats & Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Sound Toggle -->
+                <button onclick="toggleAudio()" id="soundToggleBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl border border-slate-700/60 transition-all" title="Toggle Sound FX">
+                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Balance Display -->
+                <div class="bg-slate-800/90 border border-slate-700/60 rounded-xl px-3.5 py-1.5 flex items-center gap-3 shadow-inner">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Wallet Balance</span>
+                        <span id="playerBalanceDisplay" class="text-base font-bold text-emerald-400 font-mono-num">$25.00</span>
+                    </div>
+                    <button onclick="openDepositModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg transition-all shadow-lg hover:shadow-emerald-600/20" title="Deposit Funds">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Account / Withdraw Trigger Button -->
+                <button onclick="openAccountModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i data-lucide="wallet" class="w-4 h-4 text-slate-400"></i>
+                    <span class="hidden sm:inline" id="accountBtnText">EcoCash Account</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME CONTAINER -->
+    <main class="max-w-7xl mx-auto w-full p-3 sm:p-4 md:p-6 flex-grow flex flex-col gap-4">
+        
+        <!-- WARNING BANNER IF NOT LINKED -->
+        <div id="accountWarningBanner" class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center justify-between text-amber-300 text-xs sm:text-sm hidden">
+            <div class="flex items-center gap-2.5">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+                <span>Please link your EcoCash Mobile Number before placing stakes.</span>
+            </div>
+            <button onclick="openAccountModal()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 px-3 py-1 rounded-lg font-medium text-xs whitespace-nowrap">
+                Link EcoCash
+            </button>
+        </div>
+
+        <!-- RECENT MULTIPLIERS STRIP -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 flex items-center gap-2 overflow-x-auto shadow-inner">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-2 flex items-center gap-1 shrink-0">
+                <i data-lucide="history" class="w-3.5 h-3.5"></i> History
+            </span>
+            <div id="multiplierHistory" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- GRAPH & CONTROL PANEL GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+            
+            <!-- LEFT 8 COLS: FLIGHT GRAPH CANVAS -->
+            <div class="lg:col-span-8 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden min-h-[360px] sm:min-h-[420px] shadow-2xl">
+                
+                <!-- HUD Overlay -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                    <span id="multiplierDisplay" class="text-6xl sm:text-7xl md:text-8xl font-black font-mono-num text-white tracking-tight transition-all duration-75">
+                        1.00x
+                    </span>
+                    <span id="gameStatusLabel" class="text-sm sm:text-base font-bold uppercase tracking-widest text-slate-400 mt-2 bg-slate-900/80 px-4 py-1 rounded-full border border-slate-800">
+                        WAITING FOR NEXT ROUND
+                    </span>
+                </div>
+
+                <!-- Canvas -->
+                <canvas id="flightCanvas" class="w-full h-full absolute inset-0 z-0"></canvas>
+
+                <!-- Canvas Top Overlay Bar -->
+                <div class="relative z-20 flex items-center justify-between w-full">
+                    <div class="flex items-center gap-2 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-slate-300">
+                        <span id="statusIndicator" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        <span id="liveStatusText" class="font-medium">Preparing Arena</span>
+                    </div>
+
+                    <div class="text-xs text-slate-400 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800">
+                        Total Round Stakes: <span id="roundTotalBets" class="text-white font-bold font-mono-num">$32.50</span>
+                    </div>
+                </div>
+
+                <!-- Canvas Bottom Overlay Bar -->
+                <div class="relative z-20 flex items-center justify-between text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5 bg-slate-950/60 px-2.5 py-1 rounded-md border border-slate-800/80">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Provably Fair Algorithm
+                    </span>
+                    <span class="text-slate-500 text-[11px] hidden sm:inline">Server Hash: 0x8a9e...f421</span>
+                </div>
+            </div>
+
+            <!-- RIGHT 4 COLS: STAKE & INTERACTION CONTROLS -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                
+                <!-- STAKE CONTROLS -->
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-xl relative">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-4 h-4 text-red-500"></i> Place Your Stake
+                        </h2>
+                        <span class="text-xs text-slate-400">Currency: <strong class="text-slate-200">USD ($)</strong></span>
+                    </div>
+
+                    <!-- Input Controls -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Stake Amount ($)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold font-mono-num">$</span>
+                            <input type="number" id="stakeInput" value="5.00" min="0.5" step="0.5" class="w-full bg-slate-950 border border-slate-700/80 focus:border-red-500 rounded-xl py-3 pl-8 pr-4 text-xl font-bold font-mono-num text-white focus:outline-none transition-all">
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="setStakePreset(1)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">+ $1</button>
+                            <button onclick="setStakePreset(5)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">+ $5</button>
+                            <button onclick="setStakePreset(10)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">+ $10</button>
+                            <button onclick="doubleStake()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">2x</button>
+                        </div>
+                    </div>
+
+                    <!-- Auto Cashout Setting -->
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="autoCashoutToggle" class="text-xs font-medium text-slate-300 flex items-center gap-1.5 cursor-pointer">
+                                <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Auto Stop At
+                            </label>
+                            <input type="checkbox" id="autoCashoutToggle" class="w-4 h-4 rounded accent-red-600 cursor-pointer">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="autoCashoutVal" value="2.00" step="0.1" min="1.1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-bold font-mono-num text-amber-400 focus:outline-none">
+                            <span class="text-xs text-slate-500 font-bold">Multiplier</span>
+                        </div>
+                    </div>
+
+                    <!-- Main Action Button -->
+                    <button id="mainActionButton" onclick="handleMainActionButton()" class="w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider transition-all duration-200 transform active:scale-95 shadow-xl bg-emerald-600 hover:bg-emerald-500 text-white glow-green">
+                        STAKE & FLY 🚀
+                    </button>
+                </div>
+
+                <!-- LIVE BETS COMMUNITY FEED -->
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 flex-grow flex flex-col justify-between min-h-[200px]">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400"></i> Live Round Bets
+                        </span>
+                        <span class="text-[11px] text-slate-500" id="livePlayersCount">5 Players</span>
+                    </div>
+
+                    <div id="liveBetsList" class="space-y-2 overflow-y-auto max-h-[180px] pr-1">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- SECRET OWNER AUTH MODAL -->
+    <div id="ownerAuthModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-red-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl relative glow-red">
+            <button onclick="closeOwnerAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-600/20 p-3 rounded-xl border border-red-500/40 text-red-500">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white uppercase tracking-wider">Owner Dashboard Access</h3>
+                    <p class="text-xs text-slate-400">Restricted Management Console</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleOwnerAuth(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Security PIN</label>
+                    <input type="password" id="ownerPinInput" placeholder="••••" maxlength="8" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-center text-2xl font-mono-num tracking-widest text-red-400 focus:outline-none focus:border-red-500">
+                    <p class="text-[11px] text-slate-500 mt-1">Default PIN is <strong class="text-slate-300">7788</strong></p>
+                </div>
+
+                <div id="pinErrorMsg" class="text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg hidden text-center font-semibold">
+                    Invalid PIN security key. Access denied.
+                </div>
+
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl uppercase text-sm tracking-wider transition-all">
+                    Unlock Control Panel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- OWNER DASHBOARD OVERLAY -->
+    <div id="ownerDashboardOverlay" class="fixed inset-0 bg-slate-950 z-50 overflow-y-auto hidden">
+        <header class="border-b border-red-500/20 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-red-600/20 p-2 rounded-lg border border-red-500/30 text-red-500">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-white tracking-wider flex items-center gap-2">
+                            OWNER CONTROL CENTER <span class="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded border border-red-500/30">ADMIN</span>
+                        </h2>
+                        <p class="text-[11px] text-slate-400">Platform Real-time Revenue & EcoCash Approvals</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="openPinSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all">
+                        <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i> Change PIN
+                    </button>
+                    <button onclick="closeOwnerDashboard()" class="bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 text-xs px-3 py-2 rounded-lg flex items-center gap-1.5 transition-all font-semibold">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Exit Dashboard
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto p-6 space-y-6">
+            <!-- METRICS CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Total House Balance</span>
+                        <i data-lucide="landmark" class="w-4 h-4 text-emerald-400"></i>
+                    </div>
+                    <div id="dashHouseBalance" class="text-3xl font-black text-emerald-400 font-mono-num">$1,250.00</div>
+                    <p class="text-[11px] text-slate-500 mt-2">Net player deposit hold</p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Total Stakes Placed</span>
+                        <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
+                    </div>
+                    <div id="dashTotalStakes" class="text-3xl font-black text-white font-mono-num">$4,820.00</div>
+                    <p class="text-[11px] text-slate-500 mt-2">Accumulated wagers</p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Total Payouts</span>
+                        <i data-lucide="arrow-up-right" class="w-4 h-4 text-amber-400"></i>
+                    </div>
+                    <div id="dashTotalPayouts" class="text-3xl font-black text-amber-400 font-mono-num">$3,570.00</div>
+                    <p class="text-[11px] text-slate-500 mt-2">Successful player cashouts</p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Net Profit</span>
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i>
+                    </div>
+                    <div id="dashNetProfit" class="text-3xl font-black text-purple-400 font-mono-num">$1,250.00</div>
+                    <p class="text-[11px] text-emerald-400 mt-2 font-medium">House Margin: ~25.9%</p>
+                </div>
+            </div>
+
+            <!-- WITHDRAWALS & PLAYERS WORKSPACE -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- PENDING WITHDRAWAL APPROVALS -->
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i> Pending EcoCash Cashout Requests
+                        </h3>
+                        <span id="pendingCountBadge" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs px-2.5 py-0.5 rounded-full font-bold">
+                            0 Pending
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-950 text-slate-400 uppercase font-bold border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">Player</th>
+                                    <th class="p-3">EcoCash No.</th>
+                                    <th class="p-3">Amount</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ownerWithdrawalsTable" class="divide-y divide-slate-800/60">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- REGISTERED PLAYERS -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i> Registered Players
+                        </h3>
+                        <span class="text-xs text-slate-400 font-mono-num" id="totalPlayersRegistered">3 Active</span>
+                    </div>
+
+                    <div id="registeredPlayersList" class="space-y-2.5 max-h-[300px] overflow-y-auto">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOGS -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i> Live Platform System Logs
+                </h3>
+                <div id="ownerActivityLogs" class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 font-mono text-xs text-slate-400 h-44 overflow-y-auto space-y-1.5">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ECOCASH ACCOUNT LINK MODAL -->
+    <div id="accountModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeAccountModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-5">
+                <div class="bg-emerald-600/20 p-3 rounded-xl border border-emerald-500/30 text-emerald-400">
+                    <i data-lucide="smartphone" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white uppercase tracking-wider">EcoCash Mobile Link</h3>
+                    <p class="text-xs text-slate-400">Link mobile number for instant deposits/cashouts</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleSaveAccount(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Full Name</label>
+                    <input type="text" id="playerNameInput" required placeholder="e.g. Tendai Moyo" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">EcoCash Phone Number</label>
+                    <input type="tel" id="playerPhoneInput" required placeholder="0771234567 or 0781234567" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 space-y-2">
+                    <label class="block text-xs font-semibold text-amber-400 uppercase tracking-wider">Request EcoCash Cashout</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="withdrawAmountInput" min="1" step="0.5" placeholder="Amount ($)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+                        <button type="button" onclick="handleWithdrawRequest()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 rounded-xl whitespace-nowrap transition-all">
+                            Withdraw
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all">
+                        Save EcoCash Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ECOCASH DEPOSIT USSD PUSH MODAL -->
+    <div id="depositModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closeDepositModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                    <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wider">EcoCash USSD Push Deposit</h3>
+                <p class="text-xs text-slate-400 mt-1">Direct wallet prompt simulation</p>
+            </div>
+
+            <!-- Step 1 -->
+            <div id="depositStep1" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Deposit Amount ($ USD)</label>
+                    <input type="number" id="depositAmountInput" value="10.00" min="1" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-lg font-bold font-mono-num text-emerald-400 focus:outline-none">
+                </div>
+                <button onclick="triggerUSSDPush()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition-all">
+                    Send USSD Push Prompt
+                </button>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="depositStep2" class="hidden space-y-4">
+                <div class="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-xl text-center space-y-2">
+                    <span class="inline-block text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded uppercase font-bold">USSD Prompt Sent</span>
+                    <p class="text-xs text-slate-300">Authorize transfer of <strong id="ussdPromptAmount" class="text-emerald-400">$10.00</strong> to Aviator Platform on your EcoCash handset.</p>
+                    <input type="password" maxlength="4" placeholder="EcoCash PIN (e.g. 1234)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-center text-sm tracking-widest text-white focus:outline-none">
+                </div>
+                <button onclick="confirmUSSDDeposit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all">
+                    Confirm EcoCash Payment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE PIN MODAL -->
+    <div id="pinSettingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closePinSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white uppercase tracking-wider mb-4">Change Owner PIN</h3>
+            <form onsubmit="handleChangePin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">New Security PIN</label>
+                    <input type="password" id="newPinInput" required maxlength="8" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center font-mono-num text-white">
+                </div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider">
+                    Update Security PIN
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        /* APPLICATION STATE */
+        const state = {
+            ownerPin: "7788",
+            houseBalance: 1250.00,
+            totalStakes: 4820.00,
+            totalPayouts: 3570.00,
+            soundEnabled: true,
+            
+            player: {
+                name: "Panashe N.",
+                phone: "0771234567",
+                balance: 25.00,
+                isLinked: true
+            },
+
+            registeredPlayers: [
+                { id: 1, name: "Panashe N.", phone: "0771234567", balance: 25.00 },
+                { id: 2, name: "Kudzai Chide", phone: "0789876543", balance: 140.50 },
+                { id: 3, name: "Blessing K.", phone: "0773112233", balance: 3.20 }
+            ],
+
+            withdrawRequests: [
+                { id: 101, name: "Kudzai Chide", phone: "0789876543", amount: 50.00, status: 'pending' }
+            ],
+
+            game: {
+                status: 'IDLE', // IDLE, RUNNING, CRASHED
+                multiplier: 1.00,
+                crashPoint: 2.10,
+                userStake: 0,
+                hasStaked: false,
+                hasCashedOut: false,
+                cashoutMultiplier: 0,
+                startTime: null,
+                animationFrame: null,
+                history: [1.45, 2.80, 1.12, 5.40, 1.95, 3.10, 1.05, 12.30],
+                particles: []
+            },
+
+            logoClickCount: 0,
+            logoClickTimer: null
+        };
+
+        // WEB AUDIO API SOUND GENERATOR
+        let audioCtx = null;
+        function playSound(type) {
+            if (!state.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'beep') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'win') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'crash') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, nowHere is an updated HTML single-file application modeled after your provided interface. It includes all the visual layout components, interactive elements, modal controls, administrative dashboard overlay, and simulation logic:
+
+```html
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVIATOR PLATFORM</title>
+    <!-- Tailwind CSS -->
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <!-- Lucide Icons -->
+    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    <!-- Canvas Confetti -->
+    <script src="[https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js](https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js)"></script>
+    <style>
+        @import url('[https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600;700&display=swap)');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        .font-mono-num {
+            font-family: 'Orbitron', monospace;
+        }
+        .glow-red {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+        }
+        .glow-green {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(71, 85, 105, 1);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 bg-slate-950 flex flex-col justify-between overflow-x-hidden">
+
+    <!-- MAIN NAVIGATION HEADER -->
+    <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div id="brandLogo" class="flex items-center gap-3 cursor-pointer group select-none">
+                <div class="bg-red-600/20 p-2.5 rounded-xl border border-red-500/30 group-hover:bg-red-600/30 transition-all">
+                    <i data-lucide="plane" class="w-6 h-6 text-red-500 transform -rotate-45 group-hover:scale-110 transition-transform"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider text-white flex items-center gap-1.5 font-mono-num">
+                        AVIATOR <span class="text-xs bg-red-600/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30 font-sans tracking-normal font-bold">PRO</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 tracking-wider uppercase font-medium">High Stakes Crash Arena</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-800/90 border border-slate-700/60 rounded-xl px-3.5 py-1.5 flex items-center gap-3 shadow-inner">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Wallet Balance</span>
+                        <span id="playerBalanceDisplay" class="text-base font-bold text-emerald-400 font-mono-num">$0.00</span>
+                    </div>
+                    <button onclick="openDepositModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg transition-all shadow-lg hover:shadow-emerald-600/20">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <button onclick="openAccountModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i data-lucide="wallet" class="w-4 h-4 text-slate-400"></i>
+                    <span class="hidden sm:inline" id="accountBtnText">EcoCash Account</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME LAYOUT CONTAINER -->
+    <main class="max-w-7xl mx-auto w-full p-3 sm:p-4 md:p-6 flex-grow flex flex-col gap-4">
+        <div id="accountWarningBanner" class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center justify-between text-amber-300 text-xs sm:text-sm">
+            <div class="flex items-center gap-2.5">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+                <span>Please link your EcoCash Mobile Number before placing stakes.</span>
+            </div>
+            <button onclick="openAccountModal()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 px-3 py-1 rounded-lg font-medium text-xs whitespace-nowrap">
+                Link EcoCash
+            </button>
+        </div>
+
+        <!-- RECENT MULTIPLIERS STRIP -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 flex items-center gap-2 overflow-x-auto shadow-inner">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-2 flex items-center gap-1">
+                <i data-lucide="history" class="w-3.5 h-3.5"></i> History
+            </span>
+            <div id="multiplierHistory" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"></div>
+        </div>
+
+        <!-- GRAPH & CONTROLS GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+            <!-- CANVAS DISPLAY -->
+            <div class="lg:col-span-8 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden min-h-[360px] sm:min-h-[420px] shadow-2xl">
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                    <span id="multiplierDisplay" class="text-6xl sm:text-7xl md:text-8xl font-black font-mono-num text-white tracking-tight transition-transform duration-75">
+                        1.00x
+                    </span>
+                    <span id="gameStatusLabel" class="text-sm sm:text-base font-bold uppercase tracking-widest text-slate-400 mt-2 bg-slate-900/80 px-4 py-1 rounded-full border border-slate-800">
+                        WAITING FOR NEXT ROUND
+                    </span>
+                </div>
+
+                <canvas id="flightCanvas" class="w-full h-full absolute inset-0 z-0"></canvas>
+
+                <div class="relative z-20 flex items-center justify-between w-full">
+                    <div class="flex items-center gap-2 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-slate-300">
+                        <span id="statusIndicator" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        <span id="liveStatusText" class="font-medium">Preparing Arena</span>
+                    </div>
+
+                    <div class="text-xs text-slate-400 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800">
+                        Total Round Bets: <span id="roundTotalBets" class="text-white font-bold font-mono-num">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="relative z-20 flex items-center justify-between text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5 bg-slate-950/60 px-2.5 py-1 rounded-md border border-slate-800/80">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Provably Fair Algorithm
+                    </span>
+                    <span class="text-slate-500 text-[11px]">Server Hash: 0x8a9e...f421</span>
+                </div>
+            </div>
+
+            <!-- CONTROLS & BETS PANEL -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-xl relative">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-4 h-4 text-red-500"></i> Place Your Stake
+                        </h2>
+                        <span class="text-xs text-slate-400">Currency: <strong class="text-slate-200">USD ($)</strong></span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Stake Amount ($)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold font-mono-num">$</span>
+                            <input type="number" id="stakeInput" value="5.00" min="0.5" step="0.5" class="w-full bg-slate-950 border border-slate-700/80 focus:border-red-500 rounded-xl py-3 pl-8 pr-4 text-xl font-bold font-mono-num text-white focus:outline-none transition-all">
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="setStakePreset(1)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">+ $1</button>
+                            <button onclick="setStakePreset(5)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">+ $5</button>
+                            <button onclick="setStakePreset(10)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">+ $10</button>
+                            <button onclick="doubleStake()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 text-xs rounded-lg border border-slate-700/60 transition-all">2x</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="autoCashoutToggle" class="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Auto Stop At
+                            </label>
+                            <input type="checkbox" id="autoCashoutToggle" class="w-4 h-4 rounded accent-red-600 cursor-pointer">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="autoCashoutVal" value="2.00" step="0.1" min="1.1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-bold font-mono-num text-amber-400 focus:outline-none">
+                            <span class="text-xs text-slate-500 font-bold">Multiplier</span>
+                        </div>
+                    </div>
+
+                    <button id="mainActionButton" onclick="handleMainActionButton()" class="w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider transition-all duration-200 transform active:scale-95 shadow-xl bg-emerald-600 hover:bg-emerald-500 text-white glow-green">
+                        STAKE & FLY 🚀
+                    </button>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 flex-grow flex flex-col justify-between min-h-[220px]">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400"></i> Live Bets Round
+                        </span>
+                        <span class="text-[11px] text-slate-500" id="livePlayersCount">12 Players</span>
+                    </div>
+
+                    <div id="liveBetsList" class="space-y-2 overflow-y-auto max-h-[200px] pr-1"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ADMIN AUTHENTICATION MODAL -->
+    <div id="ownerAuthModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-red-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl relative glow-red">
+            <button onclick="closeOwnerAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-600/20 p-3 rounded-xl border border-red-500/40 text-red-500">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white uppercase tracking-wider">Owner Dashboard Access</h3>
+                    <p class="text-xs text-slate-400">Restricted Administration Management Terminal</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleOwnerAuth(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Enter Security PIN</label>
+                    <input type="password" id="ownerPinInput" placeholder="••••" maxlength="8" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-center text-2xl font-mono-num tracking-widest text-red-400 focus:outline-none focus:border-red-500">
+                    <p class="text-[11px] text-slate-500 mt-1">Default PIN is <strong class="text-slate-300">7788</strong></p>
+                </div>
+
+                <div id="pinErrorMsg" class="text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg hidden text-center font-semibold">
+                    Invalid PIN security key. Access denied.
+                </div>
+
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl uppercase text-sm tracking-wider transition-all">
+                    Unlock Control Panel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD OVERLAY -->
+    <div id="ownerDashboardOverlay" class="fixed inset-0 bg-slate-950 z-50 overflow-y-auto hidden">
+        <header class="border-b border-red-500/20 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-red-600/20 p-2 rounded-lg border border-red-500/30 text-red-500">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-white tracking-wider flex items-center gap-2">
+                            OWNER CONTROL CENTER <span class="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded border border-red-500/30">ADMIN</span>
+                        </h2>
+                        <p class="text-[11px] text-slate-400">Platform Real-time Revenue & EcoCash Approval Hub</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="openPinSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all">
+                        <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i> Change PIN
+                    </button>
+                    <button onclick="closeOwnerDashboard()" class="bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 text-xs px-3 py-2 rounded-lg flex items-center gap-1.5 transition-all font-semibold">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Exit Dashboard
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto p-6 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Total House Revenue</span>
+                        <i data-lucide="landmark" class="w-4 h-4 text-emerald-400"></i>
+                    </div>
+                    <div id="dashHouseBalance" class="text-3xl font-black text-emerald-400 font-mono-num">$1,250.00</div>
+                    <p class="text-[11px] text-slate-500 mt-2">Net player deposit hold</p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Total Stakes Placed</span>
+                        <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
+                    </div>
+                    <div id="dashTotalStakes" class="text-3xl font-black text-white font-mono-num">$4,820.00</div>
+                    <p class="text-[11px] text-slate-500 mt-2">Accumulated player wagers</p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Total Payouts</span>
+                        <i data-lucide="arrow-up-right" class="w-4 h-4 text-amber-400"></i>
+                    </div>
+                    <div id="dashTotalPayouts" class="text-3xl font-black text-amber-400 font-mono-num">$3,570.00</div>
+                    <p class="text-[11px] text-slate-500 mt-2">Successful player cashouts</p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase mb-2">
+                        <span>Net Profit</span>
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i>
+                    </div>
+                    <div id="dashNetProfit" class="text-3xl font-black text-purple-400 font-mono-num">$1,250.00</div>
+                    <p class="text-[11px] text-emerald-400 mt-2 font-medium">Margin: ~25.9% House Edge</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i> Pending EcoCash Withdrawal Requests
+                        </h3>
+                        <span id="pendingCountBadge" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs px-2.5 py-0.5 rounded-full font-bold">
+                            0 Pending
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-950 text-slate-400 uppercase font-bold border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">Player</th>
+                                    <th class="p-3">EcoCash No.</th>
+                                    <th class="p-3">Amount</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ownerWithdrawalsTable" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i> Player Registry
+                        </h3>
+                        <span class="text-xs text-slate-400 font-mono-num" id="totalPlayersRegistered">3 Active</span>
+                    </div>
+
+                    <div id="registeredPlayersList" class="space-y-2.5 max-h-[300px] overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i> Live Platform System Logs & Audit Feed
+                </h3>
+                <div id="ownerActivityLogs" class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 font-mono text-xs text-slate-400 h-44 overflow-y-auto space-y-1.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCOUNT LINKING MODAL -->
+    <div id="accountModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeAccountModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-5">
+                <div class="bg-emerald-600/20 p-3 rounded-xl border border-emerald-500/30 text-emerald-400">
+                    <i data-lucide="smartphone" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white uppercase tracking-wider">EcoCash Account Link</h3>
+                    <p class="text-xs text-slate-400">Link your mobile wallet for instant deposits/withdrawals</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleSaveAccount(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Full Name</label>
+                    <input type="text" id="playerNameInput" required placeholder="e.g. Tendai Moyo" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">EcoCash Phone Number</label>
+                    <input type="tel" id="playerPhoneInput" required placeholder="0771234567 or 0781234567" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 space-y-2">
+                    <label class="block text-xs font-semibold text-amber-400 uppercase tracking-wider">Request EcoCash Cashout</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="withdrawAmountInput" min="1" step="0.5" placeholder="Amount ($)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+                        <button type="button" onclick="handleWithdrawRequest()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 rounded-xl whitespace-nowrap transition-all">
+                            Withdraw
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all">
+                        Save EcoCash Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DEPOSIT MODAL -->
+    <div id="depositModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closeDepositModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                    <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wider">EcoCash USSD Push Deposit</h3>
+                <p class="text-xs text-slate-400 mt-1">Direct wallet prompt simulation</p>
+            </div>
+
+            <div id="depositStep1" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Deposit Amount ($ USD)</label>
+                    <input type="number" id="depositAmountInput" value="10.00" min="1" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-lg font-bold font-mono-num text-emerald-400 focus:outline-none">
+                </div>
+                <button onclick="triggerUSSDPush()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition-all">
+                    Send USSD Push Prompt
+                </button>
+            </div>
+
+            <div id="depositStep2" class="hidden space-y-4">
+                <div class="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-xl text-center space-y-2">
+                    <span class="inline-block text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded uppercase font-bold">USSD Prompt Sent</span>
+                    <p class="text-xs text-slate-300">Authorize transfer of <strong id="ussdPromptAmount" class="text-emerald-400">$10.00</strong> to Aviator Platform on your EcoCash handset.</p>
+                    <input type="password" maxlength="4" placeholder="EcoCash PIN (e.g. 1234)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-center text-sm tracking-widest text-white focus:outline-none">
+                </div>
+                <button onclick="confirmUSSDDeposit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all">
+                    Confirm EcoCash Payment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE PIN MODAL -->
+    <div id="pinSettingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closePinSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white uppercase tracking-wider mb-4">Change Owner PIN</h3>
+            <form onsubmit="handleChangePin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">New PIN</label>
+                    <input type="password" id="newPinInput" required maxlength="8" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center font-mono-num text-white">
+                </div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider">
+                    Update Security PIN
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            ownerPin: "7788",
+            houseBalance: 1250.00,
+            totalStakes: 4820.00,
+            totalPayouts: 3570.00,
+            player: {
+                name: "Tendai M.",
+                phone: "0771234567",
+                balance: 25.00,
+                isLinked: true
+            },
+            registeredPlayers: [
+                { id: 1, name: "Tendai M.", phone: "0771234567", balance: 25.00 },
+                { id: 2, name: "Kudzai Chide", phone: "0789876543", balance: 140.50 },
+                { id: 3, name: "Blessing K.", phone: "0773112233", balance: 3.20 }
+            ],
+            withdrawRequests: [
+                { id: 101, name: "Kudzai Chide", phone: "0789876543", amount: 50.00, status: 'pending' }
+            ],
+            game: {
+                status: 'IDLE',
+                multiplier: 1.00,
+                crashPoint: 2.10,
+                userStake: 0,
+                hasStaked: false,
+                hasCashedOut: false,
+                cashoutMultiplier: 0,
+                startTime: null,
+                animationFrame: null,
+                history: [1.45, 2.80, 1.12, 5.40, 1.95, 3.10, 1.05, 12.30]
+            },
+            logoClickCount: 0,
+            logoClickTimer: null
+        };
+
+        window.onload = function() {
+            lucide.createIcons();
+            initCanvas();
+            updatePlayerUI();
+            renderHistory();
+            renderLiveBets();
+            
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+                    e.preventDefault();
+                    openOwnerAuthModal();
+                }
+            });
+
+            const logoEl = document.getElementById('brandLogo');
+            logoEl.addEventListener('click', function() {
+                state.logoClickCount++;
+                clearTimeout(state.logoClickTimer);
+                
+                if (state.logoClickCount >= 5) {
+                    state.logoClickCount = 0;
+                    openOwnerAuthModal();
+                } else {
+                    state.logoClickTimer = setTimeout(() => {
+                        state.logoClickCount = 0;
+                    }, 2000);
+                }
+            });
+
+            window.addEventListener('resize', initCanvas);
+            scheduleNextRound();
+        };
+
+        let canvas, ctx;
+        function initCanvas() {
+            canvas = document.getElementById('flightCanvas');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            drawStaticBackground();
+        }
+
+        function drawStaticBackground() {
+            if (!ctx) ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.25)';
+            ctx.lineWidth = 1;
+            const stepX = canvas.width / 10;
+            const stepY = canvas.height / 8;
+
+            for (let x = 0; x < canvas.width; x += stepX) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += stepY) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function renderFlightFrame(progress) {
+            drawStaticBackground();
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const startX = 40;
+            const startY = h - 40;
+            
+            const currentX = startX + (w - 120) * Math.min(progress, 1);
+            const currentY = startY - (h - 120) * Math.pow(Math.min(progress, 1), 0.8);
+
+            const grad = ctx.createLinearGradient(0, startY, 0, currentY);
+            grad.addColorStop(0, 'rgba(239, 68, 68, 0.0)');
+            grad.addColorStop(1, 'rgba(239, 68, 68, 0.25)');
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.quadraticCurveTo(startX + (currentX - startX) * 0.5, startY, currentX, currentY);
+            ctx.lineTo(currentX, startY);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.quadraticCurveTo(startX + (currentX - startX) * 0.5, startY, currentX, currentY);
+            ctx.strokeStyle = state.game.status === 'CRASHED' ? '#ef4444' : '#f87171';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            if (state.game.status === 'RUNNING') {
+                ctx.save();
+                ctx.translate(currentX, currentY);
+                ctx.rotate(-0.25);
+                ctx.fillStyle = '#ef4444';
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 16, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(-4, 0);
+                ctx.lineTo(-12, -10);
+                ctx.lineTo(2, 0);
+                ctx.fillStyle = '#dc2626';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        function scheduleNextRound() {
+            state.game.status = 'IDLE';
+            state.game.multiplier = 1.00;
+            state.game.hasStaked = false;
+            state.game.hasCashedOut = false;
+            
+            updateHUD('1.00x', 'WAITING FOR NEXT ROUND', 'bg-amber-500', 'Preparing Arena');
+            updateActionButton();
+            drawStaticBackground();
+
+            let countdown = 5;
+            const timer = setInterval(() => {
+                document.getElementById('gameStatusLabel').innerText = `NEXT FLIGHT IN ${countdown}s`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(timer);
+                    startRound();
+                }
+            }, 1000);
+        }
+
+        function startRound() {
+            state.game.status = 'RUNNING';
+            state.game.startTime = Date.now();
+            
+            const rand = Math.random();
+            if (rand < 0.3) {
+                state.game.crashPoint = (1.05 + Math.random() * 0.45);
+            } else if (rand < 0.8) {
+                state.game.crashPoint = (1.50 + Math.random() * 1.50);
+            } else {
+                state.game.crashPoint = (3.00 + Math.random() * 7.00);
+            }
+
+            updateHUD('1.00x', 'FLEW OFF PREPARATION', 'bg-emerald-500', 'IN FLIGHT');
+            updateActionButton();
+            logOwnerActivity(`New round initiated. Target Crash Multiplier: ${state.game.crashPoint.toFixed(2)}x`);
+
+            animateFlight();
+        }
+
+        function animateFlight() {
+            if (state.game.status !== 'RUNNING') return;
+
+            const elapsed = (Date.now() - state.game.startTime) / 1000;
+            state.game.multiplier = parseFloat((1 + Math.pow(elapsed * 0.38, 1.8)).toFixed(2));
+
+            const autoToggle = document.getElementById('autoCashoutToggle').checked;
+            const autoVal = parseFloat(document.getElementById('autoCashoutVal').value);
+            if (state.game.hasStaked && !state.game.hasCashedOut && autoToggle && state.game.multiplier >= autoVal) {
+                cashoutPlayer();
+            }
+
+            if (state.game.multiplier >= state.game.crashPoint) {
+                triggerCrash();
+            } else {
+                document.getElementById('multiplierDisplay').innerText = state.game.multiplier.toFixed(2) + 'x';
+                renderFlightFrame(elapsed / 6);
+                state.game.animationFrame = requestAnimationFrame(animateFlight);
+            }
+        }
+
+        function triggerCrash() {
+            state.game.status = 'CRASHED';
+            const finalMult = state.game.multiplier.toFixed(2);
+            
+            updateHUD(`${finalMult}x`, 'FLEW AWAY!', 'bg-red-500', 'CRASHED');
+            document.getElementById('multiplierDisplay').classList.add('text-red-500');
+
+            state.game.history.unshift(parseFloat(finalMult));
+            if (state.game.history.length > 10) state.game.history.pop();
+            renderHistory();
+
+            logOwnerActivity(`Plane Flew Away / Crashed at ${finalMult}x.`);
+
+            if (state.game.hasStaked && !state.game.hasCashedOut) {
+                logOwnerActivity(`Player ${state.player.name} LOST stake of $${state.game.userStake.toFixed(2)}`);
+                state.houseBalance += state.game.userStake;
+                updateOwnerDashboardMetrics();
+            }
+
+            updateActionButton();
+
+            setTimeout(() => {
+                document.getElementById('multiplierDisplay').classList.remove('text-red-500');
+                scheduleNextRound();
+            }, 3500);
+        }
+
+        function updateHUD(multText, statusText, badgeBgClass, liveText) {
+            document.getElementById('multiplierDisplay').innerText = multText;
+            document.getElementById('gameStatusLabel').innerText = statusText;
+            document.getElementById('liveStatusText').innerText = liveText;
+            const ind = document.getElementById('statusIndicator');
+            ind.className = `w-2.5 h-2.5 rounded-full animate-pulse ${badgeBgClass}`;
+        }
+
+        function handleMainActionButton() {
+            if (state.game.status === 'IDLE') {
+                placePlayerStake();
+            } else if (state.game.status === 'RUNNING') {
+                if (state.game.hasStaked && !state.game.hasCashedOut) {
+                    cashoutPlayer();
+                } else if (!state.game.hasStaked) {
+                    alert('Round already in progress! Please wait for next flight.');
+                }
+            }
+        }
+
+        function placePlayerStake() {
+            if (!state.player.isLinked) {
+                openAccountModal();
+                return;
+            }
+
+            const stakeInput = parseFloat(document.getElementById('stakeInput').value);
+            if (isNaN(stakeInput) || stakeInput <= 0) {
+                alert('Please enter a valid stake amount.');
+                return;
+            }
+
+            if (state.player.balance < stakeInput) {
+                alert('Insufficient EcoCash wallet balance! Please deposit additional funds.');
+                openDepositModal();
+                return;
+            }
+
+            state.player.balance -= stakeInput;
+            state.game.userStake = stakeInput;
+            state.game.hasStaked = true;
+            state.game.hasCashedOut = false;
+
+            state.totalStakes += stakeInput;
+
+            updatePlayerUI();
+            updateActionButton();
+            updateOwnerDashboardMetrics();
+
+            logOwnerActivity(`Player ${state.player.name} placed a stake of $${stakeInput.toFixed(2)}`);
+        }
+
+        function cashoutPlayer() {
+            if (!state.game.hasStaked || state.game.hasCashedOut) return;
+
+            state.game.hasCashedOut = true;
+            state.game.cashoutMultiplier = state.game.multiplier;
+            
+            const winnings = state.game.userStake * state.game.cashoutMultiplier;
+            state.player.balance += winnings;
+
+            state.totalPayouts += winnings;
+
+            updatePlayerUI();
+            updateActionButton();
+            updateOwnerDashboardMetrics();
+
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+
+            logOwnerActivity(`Player ${state.player.name} CASHED OUT $${winnings.toFixed(2)} at ${state.game.cashoutMultiplier}x`);
+        }
+
+        function updateActionButton() {
+            const btn = document.getElementById('mainActionButton');
+            if (state.game.status === 'IDLE') {
+                btn.className = "w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider transition-all duration-200 transform active:scale-95 shadow-xl bg-emerald-600 hover:bg-emerald-500 text-white glow-green";
+                btn.innerText = state.game.hasStaked ? "STAKE REGISTERED 🚀" : "STAKE & FLY 🚀";
+            } else if (state.game.status === 'RUNNING') {
+                if (state.game.hasStaked && !state.game.hasCashedOut) {
+                    btn.className = "w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider transition-all duration-200 transform active:scale-95 shadow-xl bg-amber-500 hover:bg-amber-400 text-slate-950 glow-red animate-pulse";
+                    btn.innerText = "STOP & CASH OUT 🛑";
+                } else if (state.game.hasCashedOut) {
+                    btn.className = "w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider bg-slate-800 text-emerald-400 cursor-not-allowed";
+                    btn.innerText = `CASHED OUT (${state.game.cashoutMultiplier}x)`;
+                } else {
+                    btn.className = "w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider bg-slate-800 text-slate-500 cursor-not-allowed";
+                    btn.innerText = "FLIGHT IN PROGRESS";
+                }
+            } else {
+                btn.className = "w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider bg-slate-800 text-slate-500 cursor-not-allowed";
+                btn.innerText = "WAITING FOR ROUND";
+            }
+        }
+
+        function setStakePreset(val) {
+            const input = document.getElementById('stakeInput');
+            input.value = (parseFloat(input.value || 0) + val).toFixed(2);
+        }
+
+        function doubleStake() {
+            const input = document.getElementById('stakeInput');
+            input.value = ((parseFloat(input.value) || 1) * 2).toFixed(2);
+        }
+
+        function openOwnerAuthModal() {
+            document.getElementById('ownerAuthModal').classList.remove('hidden');
+            document.getElementById('ownerPinInput').value = '';
+            document.getElementById('pinErrorMsg').classList.add('hidden');
+        }
+
+        function closeOwnerAuthModal() {
+            document.getElementById('ownerAuthModal').classList.add('hidden');
+        }
+
+        function handleOwnerAuth(e) {
+            e.preventDefault();
+            const pin = document.getElementById('ownerPinInput').value;
+            if (pin === state.ownerPin) {
+                closeOwnerAuthModal();
+                openOwnerDashboard();
+            } else {
+                document.getElementById('pinErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function openOwnerDashboard() {
+            updateOwnerDashboardMetrics();
+            renderWithdrawalRequestsTable();
+            renderRegisteredPlayers();
+            document.getElementById('ownerDashboardOverlay').classList.remove('hidden');
+        }
+
+        function closeOwnerDashboard() {
+            document.getElementById('ownerDashboardOverlay').classList.add('hidden');
+        }
+
+        function updateOwnerDashboardMetrics() {
+            const netProfit = state.totalStakes - state.totalPayouts;
+            document.getElementById('dashHouseBalance').innerText = `$${state.houseBalance.toFixed(2)}`;
+            document.getElementById('dashTotalStakes').innerText = `$${state.totalStakes.toFixed(2)}`;
+            document.getElementById('dashTotalPayouts').innerText = `$${state.totalPayouts.toFixed(2)}`;
+            document.getElementById('dashNetProfit').innerText = `$${netProfit.toFixed(2)}`;
+        }
+
+        function openPinSettingsModal() {
+            document.getElementById('pinSettingsModal').classList.remove('hidden');
+        }
+
+        function closePinSettingsModal() {
+            document.getElementById('pinSettingsModal').classList.add('hidden');
+        }
+
+        function handleChangePin(e) {
+            e.preventDefault();
+            const newPin = document.getElementById('newPinInput').value;
+            if (newPin && newPin.length >= 4) {
+                state.ownerPin = newPin;
+                alert('Owner Security PIN updated successfully!');
+                closePinSettingsModal();
+                logOwnerActivity(`Owner PIN was changed to: ${newPin}`);
+            }
+        }
+
+        function handleWithdrawRequest() {
+            const amt = parseFloat(document.getElementById('withdrawAmountInput').value);
+            if (isNaN(amt) || amt <= 0) {
+                alert('Please enter a valid withdrawal amount.');
+                return;
+            }
+            if (amt > state.player.balance) {
+                alert('Insufficient wallet balance to request cashout!');
+                return;
+            }
+
+            state.player.balance -= amt;
+            const req = {
+                id: Date.now(),
+                name: state.player.name,
+                phone: state.player.phone,
+                amount: amt,
+                status: 'pending'
+            };
+            state.withdrawRequests.push(req);
+
+            updatePlayerUI();
+            closeAccountModal();
+            alert('Withdrawal request submitted! Pending owner EcoCash approval.');
+            logOwnerActivity(`New EcoCash withdrawal request: $${amt.toFixed(2)} from ${state.player.phone}`);
+        }
+
+        function approveWithdrawal(id) {
+            const req = state.withdrawRequests.find(r => r.id === id);
+            if (req) {
+                req.status = 'approved';
+                renderWithdrawalRequestsTable();
+                logOwnerActivity(`EcoCash payout APPROVED for $${req.amount.toFixed(2)} to ${req.phone}`);
+                alert(`EcoCash payout of $${req.amount.toFixed(2)} successfully simulated for ${req.phone}!`);
+            }
+        }
+
+        function declineWithdrawal(id) {
+            const req = state.withdrawRequests.find(r => r.id === id);
+            if (req) {
+                req.status = 'declined';
+                state.player.balance += req.amount;
+                updatePlayerUI();
+                renderWithdrawalRequestsTable();
+                logOwnerActivity(`EcoCash payout DECLINED for $${req.amount.toFixed(2)} to ${req.phone}. Funds refunded.`);
+            }
+        }
+
+        function renderWithdrawalRequestsTable() {
+            const tbody = document.getElementById('ownerWithdrawalsTable');
+            tbody.innerHTML = '';
+
+            const pending = state.withdrawRequests.filter(r => r.status === 'pending');
+            document.getElementById('pendingCountBadge').innerText = `${pending.length} Pending`;
+
+            if (pending.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending withdrawal requests.</td></tr>`;
+                return;
+            }
+
+            pending.forEach(req => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-white">${req.name}</td>
+                    <td class="p-3 text-slate-400 font-mono">${req.phone}</td>
+                    <td class="p-3 font-bold text-amber-400 font-mono-num">$${req.amount.toFixed(2)}</td>
+                    <td class="p-3 text-right space-x-1.5">
+                        <button onclick="approveWithdrawal(${req.id})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded text-[11px] font-bold uppercase">
+                            Approve
+                        </button>
+                        <button onclick="declineWithdrawal(${req.id})" class="bg-red-600 hover:bg-red-500 text-white px-2.5 py-1 rounded text-[11px] font-bold uppercase">
+                            Decline
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updatePlayerUI() {
+            document.getElementById('playerBalanceDisplay').innerText = `$${state.player.balance.toFixed(2)}`;
+            if (state.player.isLinked) {
+                document.getElementById('accountWarningBanner').classList.add('hidden');
+                document.getElementById('accountBtnText').innerText = state.player.phone;
+            } else {
+                document.getElementById('accountWarningBanner').classList.remove('hidden');
+            }
+        }
+
+        function renderRegisteredPlayers() {
+            const container = document.getElementById('registeredPlayersList');
+            container.innerHTML = '';
+
+            state.registeredPlayers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs';
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-white">${p.name}</div>
+                        <div class="text-[11px] text-slate-500 font-mono">${p.phone}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-mono-num font-bold text-emerald-400">$${p.balance.toFixed(2)}</div>
+                        <span class="text-[10px] text-slate-500 uppercase">Balance</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            document.getElementById('totalPlayersRegistered').innerText = `${state.registeredPlayers.length} Active`;
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('multiplierHistory');
+            container.innerHTML = '';
+            state.game.history.forEach(m => {
+                const span = document.createElement('span');
+                const isHigh = m >= 2.0;
+                span.className = `px-2 py-0.5 rounded text-xs font-mono-num font-bold border ${isHigh ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`;
+                span.innerText = `${m.toFixed(2)}x`;
+                container.appendChild(span);
+            });
+        }
+
+        function renderLiveBets() {
+            const container = document.getElementById('liveBetsList');
+            const mockBots = [
+                { name: "Simba K.", stake: 10.00 },
+                { name: "Chipo M.", stake: 2.50 },
+                { name: "Farai T.", stake: 15.00 },
+                { name: "Tinashe G.", stake: 5.00 }
+            ];
+
+            container.innerHTML = '';
+            mockBots.forEach(b => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between text-xs bg-slate-950/60 p-2 rounded-lg border border-slate-800/80";
+                div.innerHTML = `
+                    <span class="text-slate-300 font-medium">${b.name}</span>
+                    <span class="font-mono-num text-slate-400">$${b.stake.toFixed(2)}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function logOwnerActivity(msg) {
+            const logs = document.getElementById('ownerActivityLogs');
+            if (logs) {
+                const time = new Date().toLocaleTimeString();
+                const p = document.createElement('p');
+                p.innerHTML = `<span class="text-slate-500">[${time}]</span> ${msg}`;
+                logs.prepend(p);
+            }
+        }
+
+        function openAccountModal() {
+            document.getElementById('accountModal').classList.remove('hidden');
+            if (state.player.isLinked) {
+                document.getElementById('playerNameInput').value = state.player.name;
+                document.getElementById('playerPhoneInput').value = state.player.phone;
+            }
+        }
+
+        function closeAccountModal() {
+            document.getElementById('accountModal').classList.add('hidden');
+        }
+
+        function handleSaveAccount(e) {
+            e.preventDefault();
+            state.player.name = document.getElementById('playerNameInput').value;
+            state.player.phone = document.getElementById('playerPhoneInput').value;
+            state.player.isLinked = true;
+            
+            updatePlayerUI();
+            closeAccountModal();
+            logOwnerActivity(`Player linked EcoCash details: ${state.player.name} (${state.player.phone})`);
+        }
+
+        function openDepositModal() {
+            document.getElementById('depositModal').classList.remove('hidden');
+            document.getElementById('depositStep1').classList.remove('hidden');
+            document.getElementById('depositStep2').classList.add('hidden');
+        }
+
+        function closeDepositModal() {
+            document.getElementById('depositModal').classList.add('hidden');
+        }
+
+        function triggerUSSDPush() {
+            const amt = parseFloat(document.getElementById('depositAmountInput').value);
+            if (isNaN(amt) || amt <= 0) {
+                alert('Please enter a valid deposit amount.');
+                return;
+            }
+            document.getElementById('ussdPromptAmount').innerText = `$${amt.toFixed(2)}`;
+            document.getElementById('depositStep1').classList.add('hidden');
+            document.getElementById('depositStep2').classList.remove('hidden');
+        }
+
+        function confirmUSSDDeposit() {
+            const amt = parseFloat(document.getElementById('depositAmountInput').value);
+            state.player.balance += amt;
+            state.houseBalance += amt;
+            
+            updatePlayerUI();
+            updateOwnerDashboardMetrics();
+            closeDepositModal();
+
+            alert(`EcoCash USSD Push Confirmed! $${amt.toFixed(2)} added to your wallet.`);
+            logOwnerActivity(`EcoCash Deposit Success: $${amt.toFixed(2)} from ${state.player.phone}`);
+        }
+    </script>
+</body>
+</html>
